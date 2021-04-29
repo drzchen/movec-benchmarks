@@ -1,0 +1,36 @@
+DIRS-softboundcets := $(sort $(patsubst ./%/softboundcets,%/,$(shell find . -name softboundcets)))
+
+OUTPUTS-softboundcets := $(patsubst %/, %/output-softboundcets, $(DIRS-softboundcets))
+SMALLS-softboundcets  := $(patsubst %/, %/small-softboundcets,  $(DIRS-softboundcets))
+LARGES-softboundcets  := $(patsubst %/, %/large-softboundcets,  $(DIRS-softboundcets))
+CLEANS-softboundcets  := $(patsubst %/, %/clean-softboundcets,  $(DIRS-softboundcets))
+
+.PHONY: output-softboundcets small-softboundcets $(SMALLS-softboundcets) large-softboundcets $(LARGES-softboundcets) clean-softboundcets $(CLEANS-softboundcets)
+
+ifneq ($(REOUTPUT),)
+.PHONY: $(OUTPUTS-softboundcets)
+endif
+
+output-softboundcets: $(OUTPUTS-softboundcets)
+
+$(OUTPUTS-softboundcets): %/output-softboundcets: %/softboundcets
+	@$(MAKE) -C $<
+
+small-softboundcets: $(SMALLS-softboundcets)
+
+$(SMALLS-softboundcets): %/small-softboundcets: %/output-softboundcets
+	@echo ""
+	@echo "Running" $(patsubst %/small-softboundcets, %, $@) "on small ..."
+	@$(MAKE) -C $(patsubst %/small-softboundcets, %/softboundcets, $@) small --no-print-directory
+
+large-softboundcets: $(LARGES-softboundcets)
+
+$(LARGES-softboundcets): %/large-softboundcets: %/output-softboundcets
+	@echo ""
+	@echo "Running" $(patsubst %/large-softboundcets, %, $@) "on large ..."
+	@$(MAKE) -C $(patsubst %/large-softboundcets, %/softboundcets, $@) large --no-print-directory
+
+clean-softboundcets: $(CLEANS-softboundcets)
+
+$(CLEANS-softboundcets): %/clean-softboundcets: %/softboundcets
+	@$(MAKE) -C $< clean

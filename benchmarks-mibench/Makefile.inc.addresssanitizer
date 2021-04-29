@@ -1,0 +1,36 @@
+DIRS-addresssanitizer := $(sort $(patsubst ./%/addresssanitizer,%/,$(shell find . -name addresssanitizer)))
+
+OUTPUTS-addresssanitizer := $(patsubst %/, %/output-addresssanitizer, $(DIRS-addresssanitizer))
+SMALLS-addresssanitizer  := $(patsubst %/, %/small-addresssanitizer,  $(DIRS-addresssanitizer))
+LARGES-addresssanitizer  := $(patsubst %/, %/large-addresssanitizer,  $(DIRS-addresssanitizer))
+CLEANS-addresssanitizer  := $(patsubst %/, %/clean-addresssanitizer,  $(DIRS-addresssanitizer))
+
+.PHONY: output-addresssanitizer small-addresssanitizer $(SMALLS-addresssanitizer) large-addresssanitizer $(LARGES-addresssanitizer) clean-addresssanitizer $(CLEANS-addresssanitizer)
+
+ifneq ($(REOUTPUT),)
+.PHONY: $(OUTPUTS-addresssanitizer)
+endif
+
+output-addresssanitizer: $(OUTPUTS-addresssanitizer)
+
+$(OUTPUTS-addresssanitizer): %/output-addresssanitizer: %/addresssanitizer
+	@$(MAKE) -C $<
+
+small-addresssanitizer: $(SMALLS-addresssanitizer)
+
+$(SMALLS-addresssanitizer): %/small-addresssanitizer: %/output-addresssanitizer
+	@echo ""
+	@echo "Running" $(patsubst %/small-addresssanitizer, %, $@) "on small ..."
+	@$(MAKE) -C $(patsubst %/small-addresssanitizer, %/addresssanitizer, $@) small --no-print-directory
+
+large-addresssanitizer: $(LARGES-addresssanitizer)
+
+$(LARGES-addresssanitizer): %/large-addresssanitizer: %/output-addresssanitizer
+	@echo ""
+	@echo "Running" $(patsubst %/large-addresssanitizer, %, $@) "on large ..."
+	@$(MAKE) -C $(patsubst %/large-addresssanitizer, %/addresssanitizer, $@) large --no-print-directory
+
+clean-addresssanitizer: $(CLEANS-addresssanitizer)
+
+$(CLEANS-addresssanitizer): %/clean-addresssanitizer: %/addresssanitizer
+	@$(MAKE) -C $< clean

@@ -1,0 +1,36 @@
+DIRS-valgrind := $(sort $(patsubst ./%/valgrind,%/,$(shell find . -name valgrind)))
+
+OUTPUTS-valgrind := $(patsubst %/, %/output-valgrind, $(DIRS-valgrind))
+SMALLS-valgrind  := $(patsubst %/, %/small-valgrind,  $(DIRS-valgrind))
+LARGES-valgrind  := $(patsubst %/, %/large-valgrind,  $(DIRS-valgrind))
+CLEANS-valgrind  := $(patsubst %/, %/clean-valgrind,  $(DIRS-valgrind))
+
+.PHONY: output-valgrind small-valgrind $(SMALLS-valgrind) large-valgrind $(LARGES-valgrind) clean-valgrind $(CLEANS-valgrind)
+
+ifneq ($(REOUTPUT),)
+.PHONY: $(OUTPUTS-valgrind)
+endif
+
+output-valgrind: $(OUTPUTS-valgrind)
+
+$(OUTPUTS-valgrind): %/output-valgrind: %/valgrind
+	@$(MAKE) -C $<
+
+small-valgrind: $(SMALLS-valgrind)
+
+$(SMALLS-valgrind): %/small-valgrind: %/output-valgrind
+	@echo ""
+	@echo "Running" $(patsubst %/small-valgrind, %, $@) "on small ..."
+	@$(MAKE) -C $(patsubst %/small-valgrind, %/valgrind, $@) small --no-print-directory
+
+large-valgrind: $(LARGES-valgrind)
+
+$(LARGES-valgrind): %/large-valgrind: %/output-valgrind
+	@echo ""
+	@echo "Running" $(patsubst %/large-valgrind, %, $@) "on large ..."
+	@$(MAKE) -C $(patsubst %/large-valgrind, %/valgrind, $@) large --no-print-directory
+
+clean-valgrind: $(CLEANS-valgrind)
+
+$(CLEANS-valgrind): %/clean-valgrind: %/valgrind
+	@$(MAKE) -C $< clean

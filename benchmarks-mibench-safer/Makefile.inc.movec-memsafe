@@ -1,0 +1,36 @@
+DIRS-movec-memsafe := $(sort $(patsubst ./%/movec-memsafe,%/,$(shell find . -name movec-memsafe)))
+
+OUTPUTS-movec-memsafe := $(patsubst %/, %/output-movec-memsafe, $(DIRS-movec-memsafe))
+SMALLS-movec-memsafe  := $(patsubst %/, %/small-movec-memsafe,  $(DIRS-movec-memsafe))
+LARGES-movec-memsafe  := $(patsubst %/, %/large-movec-memsafe,  $(DIRS-movec-memsafe))
+CLEANS-movec-memsafe  := $(patsubst %/, %/clean-movec-memsafe,  $(DIRS-movec-memsafe))
+
+.PHONY: output-movec-memsafe small-movec-memsafe $(SMALLS-movec-memsafe) large-movec-memsafe $(LARGES-movec-memsafe) clean-movec-memsafe $(CLEANS-movec-memsafe)
+
+ifneq ($(REOUTPUT),)
+.PHONY: $(OUTPUTS-movec-memsafe)
+endif
+
+output-movec-memsafe: $(OUTPUTS-movec-memsafe)
+
+$(OUTPUTS-movec-memsafe): %/output-movec-memsafe: %/movec-memsafe
+	@$(MAKE) -C $<
+
+small-movec-memsafe: $(SMALLS-movec-memsafe)
+
+$(SMALLS-movec-memsafe): %/small-movec-memsafe: %/output-movec-memsafe
+	@echo ""
+	@echo "Running" $(patsubst %/small-movec-memsafe, %, $@) "on small ..."
+	@$(MAKE) -C $(patsubst %/small-movec-memsafe, %/movec-memsafe, $@) small --no-print-directory
+
+large-movec-memsafe: $(LARGES-movec-memsafe)
+
+$(LARGES-movec-memsafe): %/large-movec-memsafe: %/output-movec-memsafe
+	@echo ""
+	@echo "Running" $(patsubst %/large-movec-memsafe, %, $@) "on large ..."
+	@$(MAKE) -C $(patsubst %/large-movec-memsafe, %/movec-memsafe, $@) large --no-print-directory
+
+clean-movec-memsafe: $(CLEANS-movec-memsafe)
+
+$(CLEANS-movec-memsafe): %/clean-movec-memsafe: %/movec-memsafe
+	@$(MAKE) -C $< clean

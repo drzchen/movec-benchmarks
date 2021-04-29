@@ -1,0 +1,52 @@
+# The make command can set the following variables, e.g., make "VAR=val".
+# VALGD_OPTS: options appended to the tool command.
+
+# The parent Makefile can set the following variables:
+# COPY_MAKEFILES: the command for copying makefiles.
+#   It can be omitted if you use the default command.
+# COPY_MORE_MAKEFILES: the additional command for copying makefiles.
+# COPY_SHELLS: the command for copying shell scripts.
+#   It can be omitted if you use the default command.
+# COPY_MORE_SHELLS: the additional command for copying shell scripts.
+#
+# ERROR_FILES: the names of the files that contain reported errors.
+#   You can use RUNTYPE in file names to match the run type, e.g., small and large.
+
+VALGD := valgrind --leak-check=full $(VALGD_OPTS) # Set the path and options of the tool
+INPUT__DIR := ../src
+OUTPUT_DIR := ../output-valgrind
+
+COPY := cp
+RMRF := rm -rf
+COPY_MAKEFILES ?= $(COPY) ../src_makefiles/Makefile $(OUTPUT_DIR)/Makefile
+COPY_SHELLS ?= $(COPY) *.sh $(OUTPUT_DIR)/
+
+.PHONY: build clean
+
+build: $(OUTPUT_DIR)
+	export INSTRU_TOOL="gcc $(O)"; $(MAKE) -C $(OUTPUT_DIR)
+	@echo "***Successfully built the benchmark."
+
+$(OUTPUT_DIR): $(INPUT__DIR)
+	$(RMRF) $(OUTPUT_DIR)
+	$(COPY) -ar $(INPUT__DIR) $(OUTPUT_DIR)
+	$(COPY_MAKEFILES)
+	$(COPY_MORE_MAKEFILES)
+	$(COPY_SHELLS)
+	$(COPY_MORE_SHELLS)
+
+clean:
+	$(RMRF) $(OUTPUT_DIR)
+
+# Count the reported errors
+small:
+	@export INSTRU_TOOL="$(VALGD)" && cd $(OUTPUT_DIR) && ./runme_small.sh
+ifneq ($(ERROR_FILES)$(ERROR_FILES_small),)
+	@../../grep_reported_errors.valgrind.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,small,$(ERROR_FILES) $(ERROR_FILES_small)))
+endif
+
+large:
+	@export INSTRU_TOOL="$(VALGD)" && cd $(OUTPUT_DIR) && ./runme_large.sh
+ifneq ($(ERROR_FILES)$(ERROR_FILES_large),)
+	@../../grep_reported_errors.valgrind.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,large,$(ERROR_FILES) $(ERROR_FILES_large)))
+endif

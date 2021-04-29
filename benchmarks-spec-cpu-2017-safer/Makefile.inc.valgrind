@@ -1,0 +1,36 @@
+DIRS-valgrind := $(sort $(patsubst ./%/valgrind,%/,$(shell find . -name valgrind)))
+
+OUTPUTS-valgrind := $(patsubst %/, %/output-valgrind, $(DIRS-valgrind))
+TESTS-valgrind  := $(patsubst %/, %/test-valgrind,  $(DIRS-valgrind))
+REFRATES-valgrind  := $(patsubst %/, %/refrate-valgrind,  $(DIRS-valgrind))
+CLEANS-valgrind  := $(patsubst %/, %/clean-valgrind,  $(DIRS-valgrind))
+
+.PHONY: output-valgrind test-valgrind $(TESTS-valgrind) refrate-valgrind $(REFRATES-valgrind) clean-valgrind $(CLEANS-valgrind)
+
+ifneq ($(REOUTPUT),)
+.PHONY: $(OUTPUTS-valgrind)
+endif
+
+output-valgrind: $(OUTPUTS-valgrind)
+
+$(OUTPUTS-valgrind): %/output-valgrind: %/valgrind
+	@$(MAKE) -C $<
+
+test-valgrind: $(TESTS-valgrind)
+
+$(TESTS-valgrind): %/test-valgrind: %/output-valgrind
+	@echo ""
+	@echo "Running" $(patsubst %/test-valgrind, %, $@) "on test ..."
+	@$(MAKE) -C $(patsubst %/test-valgrind, %/valgrind, $@) test --no-print-directory
+
+refrate-valgrind: $(REFRATES-valgrind)
+
+$(REFRATES-valgrind): %/refrate-valgrind: %/output-valgrind
+	@echo ""
+	@echo "Running" $(patsubst %/refrate-valgrind, %, $@) "on refrate ..."
+	@$(MAKE) -C $(patsubst %/refrate-valgrind, %/valgrind, $@) refrate --no-print-directory
+
+clean-valgrind: $(CLEANS-valgrind)
+
+$(CLEANS-valgrind): %/clean-valgrind: %/valgrind
+	@$(MAKE) -C $< clean
