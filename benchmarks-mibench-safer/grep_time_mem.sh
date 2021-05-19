@@ -28,3 +28,9 @@ do
 done
 echo "#### Elapsed (wall clock) time (seconds): ${time}"
 echo "#### Maximum resident set size (kbytes): ${mrss}"
+
+# Write to the specified file.
+if [ -n "${BENCHMARK_TABLE_FILE}" ]; then
+  if [ "${time}" = "0" ]; then time=0.01; fi
+  echo -n "${time},${mrss}," >> ${BENCHMARK_TABLE_FILE}
+fi

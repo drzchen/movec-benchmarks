@@ -31,3 +31,9 @@ fi
 if [ "${nonex_file}" != "0" ]; then
     echo "#### ${nonex_file}/${total_file} output files do not exist."
 fi
+
+# Write to the specified file.
+if [ -n "${BENCHMARK_TABLE_FILE}" ]; then
+  if [ "${error_cnt}" = "0" ]; then error_cnt=""; fi
+  echo -n "${error_cnt}," >> ${BENCHMARK_TABLE_FILE}
+fi
