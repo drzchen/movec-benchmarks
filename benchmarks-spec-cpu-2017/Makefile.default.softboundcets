@@ -34,13 +34,33 @@ clean:
 
 # Count the reported errors
 test:
-	@cd $(OUTPUT_DIR) && ./run_test.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $(OUTPUT_DIR); \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./run_test.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 ifneq ($(ERROR_FILES)$(ERROR_FILES_test),)
 	@../../grep_reported_errors.softboundcets.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,test,$(ERROR_FILES) $(ERROR_FILES_test)))
 endif
 
 refrate:
-	@cd $(OUTPUT_DIR) && ./run_refrate.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $(OUTPUT_DIR); \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./run_refrate.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 ifneq ($(ERROR_FILES)$(ERROR_FILES_refrate),)
 	@../../grep_reported_errors.softboundcets.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,refrate,$(ERROR_FILES) $(ERROR_FILES_refrate)))
 endif

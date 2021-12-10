@@ -20,13 +20,33 @@ test: $(TESTS)
 
 $(TESTS): %/test: %/src %/build
 	@echo "Running" $(patsubst %/test, %, $@) "on test ..."
-	@cd $< && ./run_test.sh diff
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $<; \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./run_test.sh diff; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 
 refrate: $(REFRATES)
 
 $(REFRATES): %/refrate: %/src %/build
 	@echo "Running" $(patsubst %/refrate, %, $@) "on refrate ..."
-	@cd $< && ./run_refrate.sh diff
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $<; \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./run_refrate.sh diff; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 
 clean: $(CLEANS)
 

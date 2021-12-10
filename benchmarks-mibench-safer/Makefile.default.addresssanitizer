@@ -1,5 +1,6 @@
 # The make command can set the following variables, e.g., make "VAR=val".
 # ASAN_OPTS: options appended to the tool command.
+# ASAN_ENV: options used in the environment variable ASAN_OPTIONS.
 
 # The parent Makefile can set the following variables:
 # COPY_MAKEFILES: the command for copying makefiles.
@@ -9,7 +10,9 @@
 # ERROR_FILES: the names of the files that contain reported errors.
 #   You can use RUNTYPE in file names to match the run type, e.g., small and large.
 
-ASAN := clang -fsanitize=address -fno-omit-frame-pointer $(ASAN_OPTS) # Set the path and options of the tool
+# Set the path and options of the tools
+ASAN := clang -fsanitize=address -fno-omit-frame-pointer -fno-common -fsanitize-address-use-after-scope $(ASAN_OPTS)
+ASAN_ENV := report_globals=1:replace_str=1:replace_intrin=1:detect_stack_use_after_return=1:detect_leaks=1
 INPUT__DIR := ../src
 OUTPUT_DIR := ../output-addresssanitizer
 
@@ -34,13 +37,35 @@ clean:
 
 # Count the reported errors
 small:
-	@cd $(OUTPUT_DIR) && ./runme_small.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $(OUTPUT_DIR); \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     export ASAN_OPTIONS="$(ASAN_ENV)"; \
+	     ./runme_small.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 ifneq ($(ERROR_FILES)$(ERROR_FILES_small),)
 	@../../grep_reported_errors.addresssanitizer.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,small,$(ERROR_FILES) $(ERROR_FILES_small)))
 endif
 
 large:
-	@cd $(OUTPUT_DIR) && ./runme_large.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $(OUTPUT_DIR); \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     export ASAN_OPTIONS="$(ASAN_ENV)"; \
+	     ./runme_large.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 ifneq ($(ERROR_FILES)$(ERROR_FILES_large),)
 	@../../grep_reported_errors.addresssanitizer.sh $(patsubst %,$(OUTPUT_DIR)/%,$(subst RUNTYPE,large,$(ERROR_FILES) $(ERROR_FILES_large)))
 endif

@@ -20,13 +20,33 @@ small: $(SMALLS)
 
 $(SMALLS): %/small: %/src %/build
 	@echo "Running" $(patsubst %/small, %, $@) "on small ..."
-	@cd $< && ./runme_small.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $<; \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./runme_small.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 
 large: $(LARGES)
 
 $(LARGES): %/large: %/src %/build
 	@echo "Running" $(patsubst %/large, %, $@) "on large ..."
-	@cd $< && ./runme_large.sh
+	@if [ -z "$${BENCHMARK_RUN_TIMES}" ]; then \
+	     export BENCHMARK_COUNT_DOWN=1; \
+	 else \
+	     export BENCHMARK_COUNT_DOWN="$${BENCHMARK_RUN_TIMES}"; \
+	     echo "==== Run $${BENCHMARK_RUN_TIMES} times ===="; \
+	 fi; \
+	 cd $<; \
+	 while [ $${BENCHMARK_COUNT_DOWN} -ge 1 ]; do \
+	     ./runme_large.sh; \
+	     export BENCHMARK_COUNT_DOWN=`expr $${BENCHMARK_COUNT_DOWN} - 1`; \
+	 done;
 
 clean: $(CLEANS)
 
