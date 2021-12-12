@@ -8,7 +8,7 @@ if [[ $* =~ "refrate" ]]; then RUN="refrate"; fi
 PREF=SPEC-${RUN}
 
 ## Set the benchmarks to run
-DIRS="505.mcf_r  519.lbm_r  525.x264_r  538.imagick_r  544.nab_r  557.xz_r"
+DIRS="519.lbm_r  525.x264_r  538.imagick_r  544.nab_r  557.xz_r"
 ## Softboundcets fails on these dirs under -O*
 SKIP_DIRS_SOCETS_O3="505.mcf_r 538.imagick_r"
 SKIP_DIRS_SOCETS_On="500.perlbench_r 502.gcc_r"

@@ -31,7 +31,7 @@ if [[ $* =~ "refrate" ]]; then RUN="refrate"; fi
 PREF=SPEC-${RUN}
 
 ## Set the benchmarks to run
-DIRS="505.mcf_r  519.lbm_r  525.x264_r  538.imagick_r  544.nab_r  557.xz_r"
+DIRS="519.lbm_r  525.x264_r  538.imagick_r  544.nab_r  557.xz_r"
 
 ## Set the optimization level, e.g., OPTLVL=-O1, OPTLVL=-O2 or OPTLVL=-O3
 ## The default is empty, i.e., using -O0.
